@@ -2,7 +2,7 @@
 
 ## disclaimer
 
-This application was quickly built for a talk tech demo, it is not production ready, not does it follow proper pattern design, it should only be used as a simple reference point for containerization and kubernetes manifest examples
+This application was quickly built for a talk tech demo, it is not production ready, nor does it follow proper pattern design, it should only be used as a simple reference point for containerization and kubernetes manifest examples
 
 ## docker compose example
 
