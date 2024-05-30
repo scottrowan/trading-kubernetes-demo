@@ -1,0 +1,61 @@
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+
+# Logs
+trade-app-ui/logs
+trade-app-ui/*.log
+trade-app-ui/npm-debug.log*
+trade-app-ui/yarn-debug.log*
+trade-app-ui/yarn-error.log*
+trade-app-ui/pnpm-debug.log*
+trade-app-ui/lerna-debug.log*
+
+trade-app-ui/node_modules
+trade-app-ui/dist
+trade-app-ui/dist-ssr
+trade-app-ui/*.local
+
+# Editor directories and files
+trade-app-ui/.vscode/*
+trade-app-ui/!.vscode/extensions.json
+trade-app-ui/.idea
+trade-app-ui/.DS_Store
+trade-app-ui/*.suo
+trade-app-ui/*.ntvs*
+trade-app-ui/*.njsproj
+trade-app-ui/*.sln
+trade-app-ui/*.sw?
+
+

@@ -1,0 +1,94 @@
+version: "3.8"
+services:
+  ## Trading App UI
+  trading-app-ui:
+    container_name: trading_app_ui
+    image: "trading-app-ui-old:latest"
+    ports:
+      - "5173:5173"
+    networks:
+      - tradingappnetwork
+    depends_on:
+      - trade-submission
+      - trade-view
+      - market-data
+
+  ## Trade Submission Service
+  trade-submission:
+    container_name: trade_submission_service
+    image: "trade-submission-service:latest"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://trade_db:5432/tradedb
+      - SPRING_DATASOURCE_USERNAME=trades
+      - SPRING_DATASOURCE_PASSWORD=trades
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=none
+    ports:
+      - "8440:8440"
+    depends_on:
+      - trade_db
+    networks:
+      - tradingappnetwork
+
+  ## Trade View Service
+  trade-view:
+    container_name: trade_view_service
+    image: "trade-view-service:latest"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://trade_db:5432/tradedb
+      - SPRING_DATASOURCE_USERNAME=trades
+      - SPRING_DATASOURCE_PASSWORD=trades
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop
+    ports:
+      - "8442:8442"
+    depends_on:
+      - trade_db
+    networks:
+      - tradingappnetwork
+
+  ## Trade DB
+  trade_db:
+    container_name: trade_db
+    image: "postgres:latest"
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=trades
+      - POSTGRES_USER=trades
+      - POSTGRES_DB=tradedb
+    ports:
+      - "5434:5432"
+    networks:
+      - tradingappnetwork
+
+  ## Market Data Service
+  market-data:
+    container_name: market_data_service
+    image: "market-data-service:latest"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://market_data_db:5432/marketdatadb
+      - SPRING_DATASOURCE_USERNAME=marketdata
+      - SPRING_DATASOURCE_PASSWORD=marketdata
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop
+    ports:
+      - "8444:8444"
+    depends_on:
+      - market_data_db
+    networks:
+      - tradingappnetwork
+
+  ## Market Data DB
+  market_data_db:
+    container_name: market_data_db
+    image: "postgres:latest"
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=marketdata
+      - POSTGRES_USER=marketdata
+      - POSTGRES_DB=marketdatadb
+    ports:
+      - "5436:5432"
+    networks:
+      - tradingappnetwork
+
+networks:
+  tradingappnetwork:
+    driver: bridge

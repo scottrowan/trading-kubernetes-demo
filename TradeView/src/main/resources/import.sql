@@ -1,0 +1,5 @@
+--INSERT INTO TRADE (id, currency_pair, amount, side) VALUES (1, 'USDGBP', 100000, 'BUY')
+--INSERT INTO TRADE (id, currency_pair, amount, side) VALUES (2, 'USDEUR', 50000, 'SELL')
+--INSERT INTO TRADE (id, currency_pair, amount, side) VALUES (3, 'USDGBP', 2500000, 'BUY')
+--INSERT INTO TRADE (id, currency_pair, amount, side) VALUES (4, 'USDEUR', 400000, 'BUY')
+--INSERT INTO TRADE (id, currency_pair, amount, side) VALUES (5, 'USDGBP', 500000, 'SELL')

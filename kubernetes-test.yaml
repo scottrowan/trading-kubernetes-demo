@@ -1,0 +1,389 @@
+########## TRADING-APP-UI ##########
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trading-app-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trading-app-ui
+  template:
+    metadata:
+      labels:
+        app: trading-app-ui
+    spec:
+      nodeSelector:
+        "kubernetes.io/os": linux
+      containers:
+        - name: trading-app-ui
+          image: mycontainerregistrymstest3.azurecr.io/samples/trading-app-ui:latest
+          ports:
+            - containerPort: 5173
+              name: trading-app-ui
+          resources:
+            requests:
+              cpu: "50m"
+            limits:
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trading-app-ui
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 5173
+      targetPort: 80
+  selector:
+    app: trading-app-ui
+
+########## TRADE-SUBMISSION ##########
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trade-submission
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trade-submission
+  template:
+    metadata:
+      labels:
+        app: trade-submission
+    spec:
+      nodeSelector:
+        "kubernetes.io/os": linux
+      containers:
+        - name: trade-submission
+          image: mycontainerregistrymstest3.azurecr.io/samples/trade-submission-service:latest
+          ports:
+            - containerPort: 8440
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: trade-db-conf
+                  key: host
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: trade-db-conf
+                  key: name
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: trade-db-credentials
+                  key: trade-db_user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: trade-db-credentials
+                  key: trade-db_password
+          # resources:
+          #   requests:
+          #     cpu: "4000m"
+          #   limits:
+          #     cpu: "8000m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trade-submission
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8440
+      targetPort: 8440
+  selector:
+    app: trade-submission
+
+########## TRADE-VIEW ##########
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trade-view
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trade-view
+  template:
+    metadata:
+      labels:
+        app: trade-view
+    spec:
+      nodeSelector:
+        "kubernetes.io/os": linux
+      containers:
+        - name: trade-view
+          image: mycontainerregistrymstest3.azurecr.io/samples/trade-view-service:latest
+          ports:
+            - containerPort: 8442
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: trade-db-conf
+                  key: host
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: trade-db-conf
+                  key: name
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: trade-db-credentials
+                  key: trade-db_user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: trade-db-credentials
+                  key: trade-db_password
+          # resources:
+          #   requests:
+          #     cpu: "4000m"
+          #   limits:
+          #     cpu: "8000m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trade-view
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8442
+      targetPort: 8442
+  selector:
+    app: trade-view
+
+########## TRADE-DB ##########
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trade-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trade-db
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: trade-db
+    spec:
+      containers:
+        - name: trade-db
+          image: postgres
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: trade-db-credentials
+                  key: trade-db_user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: trade-db-credentials
+                  key: trade-db_password
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: trade-db-conf
+                  key: name
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trade-db
+spec:
+  ports:
+    - port: 5432
+  selector:
+    app: trade-db
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: trade-db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: trade-db-credentials
+data:
+  trade-db_user: dHJhZGVz
+  trade-db_password: dHJhZGVz
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trade-db-conf
+data:
+  host: trade-db
+  name: tradedb
+
+########## MARKET-DATA ##########
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: market-data
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: market-data
+  template:
+    metadata:
+      labels:
+        app: market-data
+    spec:
+      nodeSelector:
+        "kubernetes.io/os": linux
+      containers:
+        - name: market-data
+          image: mycontainerregistrymstest3.azurecr.io/samples/market-data-service:latest
+          ports:
+            - containerPort: 8444
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: market-db-conf
+                  key: host
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: market-db-conf
+                  key: name
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: market-db-credentials
+                  key: market-db_user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: market-db-credentials
+                  key: market-db_password
+          # resources:
+          #   requests:
+          #     cpu: "4000m"
+          #   limits:
+          #     cpu: "8000m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: market-data
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8444
+      targetPort: 8444
+  selector:
+    app: market-data
+
+########## MARKET-DATA-DB ##########
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: market-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: market-db
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: market-db
+    spec:
+      containers:
+        - name: market-db
+          image: postgres
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: market-db-credentials
+                  key: market-db_user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: market-db-credentials
+                  key: market-db_password
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: market-db-conf
+                  key: name
+          # resources:
+          #   requests:
+          #     cpu: "1000m"
+          #   limits:
+          #     cpu: "2000m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: market-db
+spec:
+  ports:
+    - port: 5432
+  selector:
+    app: market-db
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: market-db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: market-db-credentials
+data:
+  market-db_user: bWFya2V0ZGF0YQ==
+  market-db_password: bWFya2V0ZGF0YQ==
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: market-db-conf
+data:
+  host: market-db
+  name: marketdatadb
